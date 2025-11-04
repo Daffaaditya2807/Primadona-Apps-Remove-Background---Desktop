@@ -114,9 +114,21 @@ Core Dependencies:
 
 **Perfect untuk pengguna yang ingin langsung pakai!**
 
+<div align="center">
+
+### 📥 Download Link
+
+<a href="https://drive.google.com/drive/folders/1SRCpIEKe9h6TdsJGimYYfNdV0ErgzixQ?usp=drive_link" target="_blank">
+<img src="https://img.shields.io/badge/Download-Google_Drive-4285F4?style=for-the-badge&logo=google-drive&logoColor=white" alt="Download from Google Drive"/>
+</a>
+
+</div>
+
+<br/>
+
 ```diff
-+ 1. 📦 Download latest release from Releases
-+ 2. 📂 Extract ZIP file
++ 1. 📦 Download ZIP file from link above
++ 2. 📂 Extract ZIP file to your desired location
 + 3. ▶️ Run Primadona_Background_Remover.exe
 + 4. ✨ Done! Enjoy!
 ```
@@ -244,7 +256,7 @@ graph LR
 </td>
 <td align="center" width="20%">
 <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Artist%20Palette.png" alt="Palette" width="50" height="50" />
-<br/><b>4. Background</b>
+<br/><b>4. Ubah Background</b>
 <br/><sub>Change color</sub>
 </td>
 <td align="center" width="20%">
