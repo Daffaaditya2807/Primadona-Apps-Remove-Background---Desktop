@@ -1,5 +1,5 @@
 <h1 align="center">
-  <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Framed%20Picture.png" alt="Picture" width="40" height="40" />
+  <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Activities/Sparkles.png" alt="Picture" width="40" height="40" />
   Primadona Apps - Background Remover
   <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Activities/Sparkles.png" alt="Sparkles" width="40" height="40" />
 </h1>
@@ -24,7 +24,7 @@
 
 <br/>
 
-[![🚀 Features](#-features) • [📥 Installation](#-installation) • [💡 Usage](#-usage) • [🔨 Building](#-building-executable) • [🪟 Windows 7](#-windows-7-compatibility)
+![🚀 Features](#-features) • [📥 Installation](#-installation) • [💡 Usage](#-usage) • [🔨 Building](#-building-executable) • [🪟 Windows 7](#-windows-7-compatibility)
 
 <br/>
 
@@ -39,31 +39,22 @@
 
 ![Application Preview](assets/screenshot.png)
 
-## ( Features
+## Features
 
-- **> AI-Powered Background Removal** - Menggunakan AI model untuk hasil yang akurat
-- ** Image Cropping** - Crop gambar dengan berbagai aspect ratio (Free, 4x6, 3x4, 2x3, 1x1)
-- **<� Background Replacement** - Ganti background dengan warna solid (Merah, Kuning, Biru, Abu-abu)
-- **=� Multiple Format Support** - Simpan hasil dalam PNG atau JPEG
-- **� Fast Processing** - Proses cepat dengan splash screen yang informatif
-- **=� Windows 7 Compatible** - Mendukung Windows 7 64-bit ke atas
-- **<� User-Friendly Interface** - Antarmuka yang intuitif dan mudah digunakan
+- **AI-Powered Background Removal** - Menggunakan AI model untuk hasil yang akurat
+- **Image Cropping** - Crop gambar dengan berbagai aspect ratio (Free, 4x6, 3x4, 2x3, 1x1)
+- **Background Replacement** - Ganti background dengan warna solid (Merah, Kuning, Biru, Abu-abu)
+- **Multiple Format Support** - Simpan hasil dalam PNG atau JPEG
+- **Fast Processing** - Proses cepat dengan splash screen yang informatif
+- **Windows 7 Compatible** - Mendukung Windows 7 64-bit ke atas
+- **User-Friendly Interface** - Antarmuka yang intuitif dan mudah digunakan
 
 ## 🎯 Use Cases
 
 <div align="center">
 
-| 📋 Dokumen | 🛍️ E-Commerce | 📱 Social Media | 🎨 Creative |
-|:---:|:---:|:---:|:---:|
-| Foto KTP | Foto Produk | Profile Picture | Photo Editing |
-| Foto SIM | Product Showcase | Instagram Post | Design Assets |
-| Foto Paspor | Catalog Photos | LinkedIn Photo | Creative Content |
-| Foto Visa | Online Store | Twitter Avatar | Marketing Material |
-
-<br/>
-
 <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Hand%20gestures/Thumbs%20Up.png" alt="Thumbs Up" width="25" height="25" /> 
-**Cocok untuk semua kebutuhan foto profesional Anda!** 
+**Cocok untuk semua kebutuhan foto Formal Anda!** 
 <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Hand%20gestures/Thumbs%20Up.png" alt="Thumbs Up" width="25" height="25" />
 
 </div>
