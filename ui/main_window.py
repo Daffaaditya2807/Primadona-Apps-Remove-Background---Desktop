@@ -9,7 +9,6 @@ from PyQt5.QtGui import QPixmap, QIcon
 from ui.widgets import ImageLabel, StyledButton
 from ui.crop_dialog import CropDialog
 from ui.background_dialog import BackgroundChangeDialog
-from ui.enhance_dialog import PhotoEnhanceDialog
 from utils.image_processor import ImageProcessor, REMBG_AVAILABLE
 
 class MainWindow(QMainWindow):
@@ -97,27 +96,6 @@ class MainWindow(QMainWindow):
         self.change_bg_btn.clicked.connect(self.change_background)
         self.change_bg_btn.setEnabled(False)
         panel.addWidget(self.change_bg_btn)
-        
-        self.enhance_btn = StyledButton("Perbaiki Foto")
-        self.enhance_btn.clicked.connect(self.enhance_photo)
-        self.enhance_btn.setEnabled(False)
-        self.enhance_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #9B59B6;
-                color: white;
-                font-size: 16px;
-                font-weight: bold;
-                padding: 15px 30px;
-                border: none;
-                border-radius: 5px;
-                min-width: 200px;
-            }
-            QPushButton:hover { background-color: #8E44AD; }
-            QPushButton:pressed { background-color: #7D3C98; }
-            QPushButton:disabled { background-color: #AEB6BF; }
-        """)
-        panel.addWidget(self.enhance_btn)
-        
 
         panel.addStretch()
 
@@ -155,8 +133,7 @@ class MainWindow(QMainWindow):
             self.after_image.clear()
             self.result_pixmap = None
             self.process_btn.setEnabled(True)
-            self.crop_btn.setEnabled(True)  # Aktifkan crop button
-            self.enhance_btn.setEnabled(True)
+            self.crop_btn.setEnabled(True)
             self.change_bg_btn.setEnabled(False)
             self.save_btn.setEnabled(False)
 
@@ -173,27 +150,25 @@ class MainWindow(QMainWindow):
             self.after_image.set_image(self.result_pixmap)
             self.change_bg_btn.setEnabled(True)
             self.save_btn.setEnabled(True)
-            self.crop_btn.setEnabled(True)  # Tetap aktifkan crop button
-            self.enhance_btn.setEnabled(True)
+            self.crop_btn.setEnabled(True)
             self.setCursor(Qt.ArrowCursor)
             QMessageBox.information(self, "Berhasil", "Background berhasil dihapus!")
         except Exception as e:
             self.setCursor(Qt.ArrowCursor)
             QMessageBox.critical(self, "Error", f"Gagal menghapus background:\n{str(e)}")
 
-    # Update untuk main_window.py - ganti fungsi crop_image dengan ini:
     def crop_image(self):
         """Fungsi untuk crop gambar hasil remove background"""
         # Prioritas crop: result_pixmap (setelah remove bg) > original_pixmap
         pixmap_to_crop = self.result_pixmap if self.result_pixmap else self.original_pixmap
-        
+
         if not pixmap_to_crop:
             QMessageBox.warning(self, "Peringatan", "Tidak ada gambar yang dapat di-crop!")
             return
-        
+
         # Tentukan sumber gambar untuk informasi user
         source_info = "gambar hasil remove background" if self.result_pixmap else "gambar asli"
-        
+
         # Buka dialog crop
         dialog = CropDialog(pixmap_to_crop, self)
         if dialog.exec_() == QDialog.Accepted:
@@ -205,7 +180,6 @@ class MainWindow(QMainWindow):
                     self.after_image.set_image(self.result_pixmap)
                     # Keep buttons enabled karena masih ada result
                     self.change_bg_btn.setEnabled(True)
-                    self.enhance_btn.setEnabled(True)
                     self.save_btn.setEnabled(True)
                 else:
                     # Jika crop dari original, update original_pixmap
@@ -215,9 +189,8 @@ class MainWindow(QMainWindow):
                     self.after_image.clear()
                     self.result_pixmap = None
                     self.change_bg_btn.setEnabled(False)
-                    self.enhance_btn.setEnabled(True)
                     self.save_btn.setEnabled(False)
-                
+
                 QMessageBox.information(self, "Berhasil", f"Berhasil crop {source_info}!")
 
     # Update untuk mengaktifkan button crop berdasarkan kondisi
@@ -232,7 +205,7 @@ class MainWindow(QMainWindow):
         if not self.result_pixmap:
             QMessageBox.warning(self, "Peringatan", "Lakukan proses hapus background terlebih dahulu!")
             return
-        
+
         # Buka dialog change background
         dialog = BackgroundChangeDialog(self.result_pixmap, self)
         if dialog.exec_() == QDialog.Accepted:
@@ -241,44 +214,8 @@ class MainWindow(QMainWindow):
                 # Update result pixmap dengan background baru
                 self.result_pixmap = new_background_pixmap
                 self.after_image.set_image(self.result_pixmap)
-                
+
                 QMessageBox.information(self, "Berhasil", "Background berhasil diubah!")
-    # Tambahkan fungsi enhance_photo:
-    def enhance_photo(self):
-        """Fungsi untuk memperbaiki foto"""
-        # Prioritas enhance: result_pixmap > original_pixmap
-        pixmap_to_enhance = self.result_pixmap if self.result_pixmap else self.original_pixmap
-        
-        if not pixmap_to_enhance:
-            QMessageBox.warning(self, "Peringatan", "Tidak ada gambar yang dapat diperbaiki!")
-            return
-        
-        # Tentukan sumber gambar untuk informasi user
-        source_info = "gambar hasil editing" if self.result_pixmap else "gambar asli"
-        
-        # Buka dialog enhance
-        dialog = PhotoEnhanceDialog(pixmap_to_enhance, self)
-        if dialog.exec_() == QDialog.Accepted:
-            enhanced_pixmap = dialog.get_enhanced_pixmap()
-            if enhanced_pixmap:
-                if self.result_pixmap:
-                    # Jika enhance dari result, update result_pixmap
-                    self.result_pixmap = enhanced_pixmap
-                    self.after_image.set_image(self.result_pixmap)
-                    # Keep all buttons enabled
-                    self.change_bg_btn.setEnabled(True)
-                    self.crop_btn.setEnabled(True)
-                    self.enhance_btn.setEnabled(True)
-                    self.save_btn.setEnabled(True)
-                else:
-                    # Jika enhance dari original, update original_pixmap
-                    self.original_pixmap = enhanced_pixmap
-                    self.before_image.set_image(self.original_pixmap)
-                    # Enable relevant buttons
-                    self.crop_btn.setEnabled(True)
-                    self.enhance_btn.setEnabled(True)
-                
-                QMessageBox.information(self, "Berhasil", f"Berhasil memperbaiki {source_info}!")
 
     def save_result(self):
         if not self.result_pixmap:

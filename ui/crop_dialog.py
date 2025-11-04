@@ -17,6 +17,17 @@ class CropWidget(QLabel):
         self.is_cropping = False
         self.aspect_ratio = None  # Untuk fixed aspect ratio
         
+        # Untuk resize dan move functionality
+        self.is_resizing = False
+        self.is_moving = False
+        self.resize_handle = None
+        self.move_start_point = None
+        self.handle_size = 8
+        
+        # Resize handles: 0=top-left, 1=top-right, 2=bottom-left, 3=bottom-right
+        # 4=top, 5=bottom, 6=left, 7=right
+        self.resize_handles = []
+        
         self.setMinimumSize(400, 300)
         self.setAlignment(Qt.AlignCenter)
         self.setStyleSheet("border: 1px solid #ccc; background-color: white;")
@@ -61,9 +72,197 @@ class CropWidget(QLabel):
                 overlay_painter.end()
                 
                 painter.drawPixmap(0, 0, overlay)
+                
+                # Gambar resize handles
+                self.draw_resize_handles(painter)
             
             painter.end()
             self.setPixmap(display_pixmap)
+    
+    def draw_resize_handles(self, painter):
+        """Gambar resize handles di sekitar crop rectangle"""
+        if self.crop_rect.isNull():
+            return
+            
+        self.resize_handles = []
+        handle_size = self.handle_size
+        
+        # Warna handle
+        painter.setBrush(QColor(255, 255, 255))
+        painter.setPen(QPen(QColor(255, 0, 0), 2))
+        
+        rect = self.crop_rect
+        
+        # Corner handles
+        handles = [
+            (rect.left() - handle_size//2, rect.top() - handle_size//2),      # top-left
+            (rect.right() - handle_size//2, rect.top() - handle_size//2),     # top-right
+            (rect.left() - handle_size//2, rect.bottom() - handle_size//2),   # bottom-left
+            (rect.right() - handle_size//2, rect.bottom() - handle_size//2),  # bottom-right
+            (rect.center().x() - handle_size//2, rect.top() - handle_size//2),    # top
+            (rect.center().x() - handle_size//2, rect.bottom() - handle_size//2), # bottom
+            (rect.left() - handle_size//2, rect.center().y() - handle_size//2),   # left
+            (rect.right() - handle_size//2, rect.center().y() - handle_size//2)   # right
+        ]
+        
+        for i, (x, y) in enumerate(handles):
+            handle_rect = QRect(x, y, handle_size, handle_size)
+            painter.drawRect(handle_rect)
+            self.resize_handles.append(handle_rect)
+    
+    def get_handle_at_point(self, point):
+        """Return handle index jika point berada di handle, -1 jika tidak"""
+        for i, handle in enumerate(self.resize_handles):
+            if handle.contains(point):
+                return i
+        return -1
+    
+    def get_cursor_for_handle(self, handle_index):
+        """Return cursor yang sesuai untuk handle"""
+        cursors = [
+            Qt.SizeFDiagCursor,  # top-left
+            Qt.SizeBDiagCursor,  # top-right
+            Qt.SizeBDiagCursor,  # bottom-left
+            Qt.SizeFDiagCursor,  # bottom-right
+            Qt.SizeVerCursor,    # top
+            Qt.SizeVerCursor,    # bottom
+            Qt.SizeHorCursor,    # left
+            Qt.SizeHorCursor     # right
+        ]
+        return cursors[handle_index] if 0 <= handle_index < len(cursors) else Qt.ArrowCursor
+    
+    def can_move_crop(self, point):
+        """Check apakah point berada di dalam crop area untuk moving"""
+        if self.crop_rect.isNull():
+            return False
+        return self.crop_rect.contains(point)
+    
+    def move_crop_rect(self, delta_x, delta_y):
+        """Move crop rectangle dengan delta yang diberikan"""
+        if self.crop_rect.isNull():
+            return
+            
+        pixmap_bounds = self.get_pixmap_bounds()
+        new_rect = self.crop_rect.translated(delta_x, delta_y)
+        
+        # Pastikan crop rect tetap dalam bounds
+        if new_rect.left() < 0:
+            new_rect.moveLeft(0)
+        if new_rect.top() < 0:
+            new_rect.moveTop(0)
+        if new_rect.right() > pixmap_bounds.width():
+            new_rect.moveRight(pixmap_bounds.width())
+        if new_rect.bottom() > pixmap_bounds.height():
+            new_rect.moveBottom(pixmap_bounds.height())
+            
+        self.crop_rect = new_rect
+    
+    def resize_crop_rect(self, handle_index, new_point):
+        """Resize crop rectangle berdasarkan handle yang di-drag"""
+        if self.crop_rect.isNull():
+            return
+            
+        pixmap_bounds = self.get_pixmap_bounds()
+        
+        # Batasi new_point dalam pixmap bounds
+        new_x = max(0, min(new_point.x(), pixmap_bounds.width()))
+        new_y = max(0, min(new_point.y(), pixmap_bounds.height()))
+        
+        rect = self.crop_rect
+        
+        # Handle resize berdasarkan handle yang di-drag
+        if handle_index == 0:  # top-left
+            new_width = rect.right() - new_x
+            new_height = rect.bottom() - new_y
+            if self.aspect_ratio and new_height > 0:
+                if new_width / new_height > self.aspect_ratio:
+                    new_width = int(new_height * self.aspect_ratio)
+                else:
+                    new_height = int(new_width / self.aspect_ratio)
+            self.crop_rect = QRect(rect.right() - new_width, rect.bottom() - new_height, new_width, new_height)
+            
+        elif handle_index == 1:  # top-right
+            new_width = new_x - rect.left()
+            new_height = rect.bottom() - new_y
+            if self.aspect_ratio and new_height > 0:
+                if new_width / new_height > self.aspect_ratio:
+                    new_width = int(new_height * self.aspect_ratio)
+                else:
+                    new_height = int(new_width / self.aspect_ratio)
+            self.crop_rect = QRect(rect.left(), rect.bottom() - new_height, new_width, new_height)
+            
+        elif handle_index == 2:  # bottom-left
+            new_width = rect.right() - new_x
+            new_height = new_y - rect.top()
+            if self.aspect_ratio and new_height > 0:
+                if new_width / new_height > self.aspect_ratio:
+                    new_width = int(new_height * self.aspect_ratio)
+                else:
+                    new_height = int(new_width / self.aspect_ratio)
+            self.crop_rect = QRect(rect.right() - new_width, rect.top(), new_width, new_height)
+            
+        elif handle_index == 3:  # bottom-right
+            new_width = new_x - rect.left()
+            new_height = new_y - rect.top()
+            if self.aspect_ratio and new_height > 0:
+                if new_width / new_height > self.aspect_ratio:
+                    new_width = int(new_height * self.aspect_ratio)
+                else:
+                    new_height = int(new_width / self.aspect_ratio)
+            self.crop_rect = QRect(rect.left(), rect.top(), new_width, new_height)
+            
+        elif handle_index == 4:  # top
+            new_height = rect.bottom() - new_y
+            if self.aspect_ratio:
+                new_width = int(new_height * self.aspect_ratio)
+                new_x = rect.center().x() - new_width // 2
+                self.crop_rect = QRect(new_x, rect.bottom() - new_height, new_width, new_height)
+            else:
+                self.crop_rect = QRect(rect.left(), rect.bottom() - new_height, rect.width(), new_height)
+                
+        elif handle_index == 5:  # bottom
+            new_height = new_y - rect.top()
+            if self.aspect_ratio:
+                new_width = int(new_height * self.aspect_ratio)
+                new_x = rect.center().x() - new_width // 2
+                self.crop_rect = QRect(new_x, rect.top(), new_width, new_height)
+            else:
+                self.crop_rect = QRect(rect.left(), rect.top(), rect.width(), new_height)
+                
+        elif handle_index == 6:  # left
+            new_width = rect.right() - new_x
+            if self.aspect_ratio:
+                new_height = int(new_width / self.aspect_ratio)
+                new_y = rect.center().y() - new_height // 2
+                self.crop_rect = QRect(rect.right() - new_width, new_y, new_width, new_height)
+            else:
+                self.crop_rect = QRect(rect.right() - new_width, rect.top(), new_width, rect.height())
+                
+        elif handle_index == 7:  # right
+            new_width = new_x - rect.left()
+            if self.aspect_ratio:
+                new_height = int(new_width / self.aspect_ratio)
+                new_y = rect.center().y() - new_height // 2
+                self.crop_rect = QRect(rect.left(), new_y, new_width, new_height)
+            else:
+                self.crop_rect = QRect(rect.left(), rect.top(), new_width, rect.height())
+        
+        # Pastikan minimal size
+        min_size = 10
+        if self.crop_rect.width() < min_size:
+            self.crop_rect.setWidth(min_size)
+        if self.crop_rect.height() < min_size:
+            self.crop_rect.setHeight(min_size)
+        
+        # Pastikan dalam bounds
+        if self.crop_rect.left() < 0:
+            self.crop_rect.moveLeft(0)
+        if self.crop_rect.top() < 0:
+            self.crop_rect.moveTop(0)
+        if self.crop_rect.right() > pixmap_bounds.width():
+            self.crop_rect.moveRight(pixmap_bounds.width())
+        if self.crop_rect.bottom() > pixmap_bounds.height():
+            self.crop_rect.moveBottom(pixmap_bounds.height())
     
     def get_pixmap_bounds(self):
         """Get bounds pixmap dalam widget"""
@@ -80,12 +279,32 @@ class CropWidget(QLabel):
         return QRect(x_offset, y_offset, pixmap_rect.width(), pixmap_rect.height())
     
     def mousePressEvent(self, event):
-        """Handle mouse press untuk mulai crop selection"""
+        """Handle mouse press untuk mulai crop selection atau adjustment"""
         if event.button() == Qt.LeftButton and self.scaled_pixmap:
             pixmap_bounds = self.get_pixmap_bounds()
             
             # Pastikan click dalam bounds pixmap
             if pixmap_bounds.contains(event.pos()):
+                # Konversi ke koordinat pixmap
+                pixmap_point = event.pos() - pixmap_bounds.topLeft()
+                
+                # Cek apakah click pada resize handle
+                if not self.crop_rect.isNull():
+                    handle_index = self.get_handle_at_point(pixmap_point)
+                    if handle_index >= 0:
+                        self.is_resizing = True
+                        self.resize_handle = handle_index
+                        self.setCursor(self.get_cursor_for_handle(handle_index))
+                        return
+                    
+                    # Cek apakah click untuk move crop
+                    if self.can_move_crop(pixmap_point):
+                        self.is_moving = True
+                        self.move_start_point = pixmap_point
+                        self.setCursor(Qt.SizeAllCursor)
+                        return
+                
+                # Mulai crop selection baru
                 self.start_point = event.pos()
                 self.is_cropping = True
                 self.crop_rect = QRect()
@@ -93,10 +312,30 @@ class CropWidget(QLabel):
                 self.update_display()
     
     def mouseMoveEvent(self, event):
-        """Handle mouse move untuk update crop selection"""
-        if self.is_cropping and self.start_point:
-            pixmap_bounds = self.get_pixmap_bounds()
+        """Handle mouse move untuk update crop selection atau adjustment"""
+        pixmap_bounds = self.get_pixmap_bounds()
+        
+        if not pixmap_bounds.contains(event.pos()):
+            self.setCursor(Qt.ArrowCursor)
+            return
             
+        pixmap_point = event.pos() - pixmap_bounds.topLeft()
+        
+        if self.is_resizing and self.resize_handle is not None:
+            # Handle resize
+            self.resize_crop_rect(self.resize_handle, pixmap_point)
+            self.update_display()
+            
+        elif self.is_moving and self.move_start_point:
+            # Handle move
+            delta_x = pixmap_point.x() - self.move_start_point.x()
+            delta_y = pixmap_point.y() - self.move_start_point.y()
+            self.move_crop_rect(delta_x, delta_y)
+            self.move_start_point = pixmap_point
+            self.update_display()
+            
+        elif self.is_cropping and self.start_point:
+            # Handle crop selection
             # Batasi end point dalam pixmap bounds
             end_x = max(pixmap_bounds.left(), 
                        min(event.pos().x(), pixmap_bounds.right()))
@@ -134,7 +373,7 @@ class CropWidget(QLabel):
             
             # Pastikan crop rect dalam bounds
             left = max(0, min(left, pixmap_bounds.width() - width))
-            top = max(0, min(top, pixmap_bounds.height() - height))
+            top = max(0, min(top, pixmap_bounds.height() - top))
             
             # Pastikan width dan height tidak melebihi bounds
             width = min(width, pixmap_bounds.width() - left)
@@ -142,11 +381,29 @@ class CropWidget(QLabel):
             
             self.crop_rect = QRect(left, top, width, height)
             self.update_display()
+            
+        else:
+            # Update cursor berdasarkan posisi mouse
+            if not self.crop_rect.isNull():
+                handle_index = self.get_handle_at_point(pixmap_point)
+                if handle_index >= 0:
+                    self.setCursor(self.get_cursor_for_handle(handle_index))
+                elif self.can_move_crop(pixmap_point):
+                    self.setCursor(Qt.SizeAllCursor)
+                else:
+                    self.setCursor(Qt.ArrowCursor)
+            else:
+                self.setCursor(Qt.ArrowCursor)
     
     def mouseReleaseEvent(self, event):
-        """Handle mouse release untuk selesai crop selection"""
+        """Handle mouse release untuk selesai crop selection atau adjustment"""
         if event.button() == Qt.LeftButton:
             self.is_cropping = False
+            self.is_resizing = False
+            self.is_moving = False
+            self.resize_handle = None
+            self.move_start_point = None
+            self.setCursor(Qt.ArrowCursor)
     
     def get_crop_rect(self):
         """Return crop rectangle dalam koordinat pixmap asli"""
