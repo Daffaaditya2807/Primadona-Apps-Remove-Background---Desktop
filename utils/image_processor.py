@@ -6,15 +6,22 @@ from PyQt5.QtCore import QBuffer
 try:
     from rembg import remove
     REMBG_AVAILABLE = True
+    REMBG_ERROR = None
 except Exception as e:
     REMBG_AVAILABLE = False
+    REMBG_ERROR = str(e)
     print(f"Warning: rembg not available: {e}")
+    import traceback
+    traceback.print_exc()
 
 class ImageProcessor:
     @staticmethod
     def remove_background(input_image):
         if not REMBG_AVAILABLE:
-            raise Exception("rembg library tidak terinstall")
+            error_msg = "rembg library tidak terinstall"
+            if REMBG_ERROR:
+                error_msg += f"\nDetail error: {REMBG_ERROR}"
+            raise Exception(error_msg)
 
         buffer = QBuffer()
         buffer.open(QBuffer.ReadWrite)

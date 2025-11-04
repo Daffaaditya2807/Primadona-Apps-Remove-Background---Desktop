@@ -1,0 +1,40 @@
+# Windows 7 Compatible Dependencies
+# Python 3.8.x required
+# TESTED ON WINDOWS 7 64-BIT
+
+# GUI Framework
+PyQt5==5.15.9
+
+# Image Processing
+Pillow==9.5.0
+
+# Scientific Computing (compatible versions)
+numpy==1.23.5
+scipy==1.9.1
+
+# Computer Vision
+opencv-python==4.7.0.72
+
+# Background Removal
+rembg==2.0.30
+pymatting==1.1.8
+pooch~=1.6.0
+
+# ONNX Runtime - CRITICAL: 1.8.1 is the last version supporting Windows 7
+onnxruntime==1.8.1
+
+# Scientific Libraries (compatible with scipy 1.9.1)
+scikit-image==0.20.0
+
+# Progress bar
+tqdm==4.65.0
+
+# Other dependencies (let pip resolve these)
+requests
+certifi
+charset-normalizer
+idna
+urllib3
+
+# Build Tool
+pyinstaller==5.13.2

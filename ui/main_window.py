@@ -126,7 +126,10 @@ class MainWindow(QMainWindow):
         layout.addLayout(save_container)
 
     def add_photo(self):
-        file_path, _ = QFileDialog.getOpenFileName(self, "Pilih Foto", "", "Image Files (*.png *.jpg *.jpeg *.bmp *.gif)")
+        # Default ke folder Downloads
+        import os
+        downloads_path = os.path.join(os.path.expanduser("~"), "Downloads")
+        file_path, _ = QFileDialog.getOpenFileName(self, "Pilih Foto", downloads_path, "Image Files (*.png *.jpg *.jpeg *.bmp *.gif)")
         if file_path:
             self.original_pixmap = QPixmap(file_path)
             self.before_image.set_image(self.original_pixmap)
@@ -141,7 +144,7 @@ class MainWindow(QMainWindow):
         if not self.original_pixmap:
             return
         if not REMBG_AVAILABLE:
-            QMessageBox.warning(self, "Library Tidak Tersedia", "Library rembg tidak terinstall.\nInstall dengan:\npip install rembg")
+            QMessageBox.warning(self, "Library Tidak Tersedia", "Library rembg tidak terinstall.")
             return
         try:
             self.setCursor(Qt.WaitCursor)
@@ -152,10 +155,9 @@ class MainWindow(QMainWindow):
             self.save_btn.setEnabled(True)
             self.crop_btn.setEnabled(True)
             self.setCursor(Qt.ArrowCursor)
-            QMessageBox.information(self, "Berhasil", "Background berhasil dihapus!")
         except Exception as e:
             self.setCursor(Qt.ArrowCursor)
-            QMessageBox.critical(self, "Error", f"Gagal menghapus background:\n{str(e)}")
+            QMessageBox.critical(self, "Error", "Gagal menghapus background")
 
     def crop_image(self):
         """Fungsi untuk crop gambar hasil remove background"""
@@ -191,8 +193,6 @@ class MainWindow(QMainWindow):
                     self.change_bg_btn.setEnabled(False)
                     self.save_btn.setEnabled(False)
 
-                QMessageBox.information(self, "Berhasil", f"Berhasil crop {source_info}!")
-
     # Update untuk mengaktifkan button crop berdasarkan kondisi
     def update_crop_button_state(self):
         """Update state button crop berdasarkan kondisi gambar"""
@@ -215,12 +215,11 @@ class MainWindow(QMainWindow):
                 self.result_pixmap = new_background_pixmap
                 self.after_image.set_image(self.result_pixmap)
 
-                QMessageBox.information(self, "Berhasil", "Background berhasil diubah!")
-
     def save_result(self):
         if not self.result_pixmap:
             return
-        file_path, _ = QFileDialog.getSaveFileName(self, "Simpan Hasil", "hasil_no_bg.png", "PNG Files (*.png);;JPEG Files (*.jpg)")
+        # Default ke folder Downloads
+        downloads_path = os.path.join(os.path.expanduser("~"), "Downloads", "hasil_no_bg.png")
+        file_path, _ = QFileDialog.getSaveFileName(self, "Simpan Hasil", downloads_path, "PNG Files (*.png);;JPEG Files (*.jpg)")
         if file_path:
             self.result_pixmap.save(file_path, quality=100)
-            QMessageBox.information(self, "Berhasil", f"Foto berhasil disimpan ke:\n{file_path}")
