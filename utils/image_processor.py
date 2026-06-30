@@ -14,25 +14,24 @@ except Exception as e:
     import traceback
     traceback.print_exc()
 
-class ImageProcessor:
-    @staticmethod
-    def remove_background(input_image):
-        if not REMBG_AVAILABLE:
-            error_msg = "rembg library tidak terinstall"
-            if REMBG_ERROR:
-                error_msg += f"\nDetail error: {REMBG_ERROR}"
-            raise Exception(error_msg)
+def remove_background(input_image):
+    if not REMBG_AVAILABLE:
+        error_msg = "rembg library tidak terinstall"
+        if REMBG_ERROR:
+            error_msg += f"\nDetail error: {REMBG_ERROR}"
+        raise Exception(error_msg)
 
-        buffer = QBuffer()
-        buffer.open(QBuffer.ReadWrite)
-        input_image.save(buffer, "PNG")
-        pil_image = Image.open(io.BytesIO(buffer.data()))
+    buffer = QBuffer()
+    buffer.open(QBuffer.ReadWrite)
+    input_image.save(buffer, "PNG")
+    pil_image = Image.open(io.BytesIO(buffer.data()))
 
-        output_image = remove(pil_image)
-        buffer = io.BytesIO()
-        output_image.save(buffer, format='PNG')
-        buffer.seek(0)
+    output_image = remove(pil_image)
+    buffer = io.BytesIO()
+    output_image.save(buffer, format='PNG')
+    buffer.seek(0)
 
-        result_pixmap = QPixmap()
-        result_pixmap.loadFromData(buffer.read())
-        return result_pixmap
+    result_pixmap = QPixmap()
+    result_pixmap.loadFromData(buffer.read())
+    return result_pixmap
+
